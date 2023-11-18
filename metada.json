@@ -1,0 +1,15 @@
+{
+  "name": "Mi NFT",
+  "description": "Una descripción de mi NFT",
+  "image": "https://ipfs.io/ipfs/QmTrEJUHsDzsmxfJ4e98R81tn2kT9P1ad1Uxz6vFXb7Ccz",
+  "attributes": [
+    {
+      "trait_type": "Color",
+      "value": "Azul"
+    },
+    {
+      "trait_type": "Edición",
+      "value": "Edición Limitada"
+    }
+  ]
+}
