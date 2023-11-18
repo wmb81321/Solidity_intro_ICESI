@@ -11,7 +11,7 @@ contract TokenShop {
     
     AggregatorV3Interface internal priceFeed; **** toma los precios de un Feed dados por Chainlink***
     TokenInterface public minter;
-    uint256 public tokenPrice = 2000; //1 token = 20.00 usd, with 2 decimal places
+    uint256 public tokenPrice = 10000; //1 token = 10 usd, with 2 decimal places
     address public owner;
     
     constructor(address tokenAddress) {
