@@ -1,49 +1,50 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.13;
+pragma solidity ^0.8.20;
 
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-interface TokenInterface {
-    function mint(address account, uint256 amount) external;
-}
-
-contract TokenShop {
+contract Shopper {
+    IERC20 public caliToken;
     AggregatorV3Interface internal priceFeed;
-    TokenInterface public minter;
-    uint256 public tokenPrice = 10000; // 1 token = 10 USD, with 2 decimal places
     address public owner;
+    uint256 public usdPerToken; // Precio del token en dólares, con 2 decimales (ejemplo: $10.00 = 1000)
 
-    constructor(address tokenAddress) {
-        minter = TokenInterface(tokenAddress);
+//El constructor es muy importante por que define muchas variables dentro del contrato//
+    constructor(address _caliTokenAddress, address _priceFeedAddress, uint256 _usdPerToken) {
+        caliToken = IERC20(_caliTokenAddress);
         priceFeed = AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306);
         owner = msg.sender;
+        usdPerToken = _usdPerToken;
     }
 
-    function getLatestPrice() public view returns (int) {
+    // Función para obtener el último precio de ETH/USD desde Chainlink
+    function getLatestETHPrice() public view returns (uint256) {
         (,int price,,,) = priceFeed.latestRoundData();
-        return price;
+        return uint256(price);
     }
 
-    function tokenAmount(uint256 amountETH) public view returns (uint256) {
-        uint256 ethUsd = uint256(getLatestPrice());
-        uint256 amountUSD = amountETH * ethUsd / 1e18; // ETH tiene 18 decimales
-        uint256 amountToken = amountUSD * 100 / tokenPrice; // 2 decimales para el precio del token
-        return amountToken;
+    // Función para comprar tokens
+    function buyTokens() public payable {
+        uint256 ethPrice = getLatestETHPrice(); // Precio de ETH en USD con 8 decimales
+        uint256 ethAmountInUsd = (msg.value * ethPrice) / 1e8; // Convertir ETH enviado a USD
+        uint256 tokensToBuy = ethAmountInUsd / usdPerToken; // Calcular la cantidad de tokens a comprar
+        require(tokensToBuy > 0, "Debes enviar suficiente ETH para comprar al menos un token");
+        uint256 contractBalance = caliToken.balanceOf(address(this));
+        require(contractBalance >= tokensToBuy, "El contrato no tiene suficientes tokens");
+        caliToken.transfer(msg.sender, tokensToBuy);
     }
 
-    receive() external payable {
-        uint256 amountToken = tokenAmount(msg.value);
-        minter.mint(msg.sender, amountToken);
-    }
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Solo el propietario puede ejecutar esta funcion");
-        _;
-    }
-
-    function withdraw() external onlyOwner {
+    // Función para retirar ETH del contrato
+    function withdrawETH() public {
+        require(msg.sender == owner, "Solo el propietario puede retirar ETH");
         payable(owner).transfer(address(this).balance);
     }
-}
 
+    // Función para establecer el precio del token en USD
+    function setUsdPerToken(uint256 _newPrice) public {
+        require(msg.sender == owner, "Solo el propietario puede cambiar el precio");
+        usdPerToken = _newPrice;
+    }
+}
 
