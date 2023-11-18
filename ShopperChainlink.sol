@@ -12,8 +12,8 @@ contract Shopper {
 
 //El constructor es muy importante por que define muchas variables dentro del contrato//
 constructor(address _caliTokenAddress, address _priceFeedAddress, uint256 _usdPerToken) {
-    caliToken = IERC20(_caliTokenAddress);
-    priceFeed = AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306); // Asignar _priceFeedAddress a priceFeed
+    caliToken = IERC20(_caliTokenAddress); //Asignar direccion de token
+    priceFeed = AggregatorV3Interface(_0x694AA1769357215DE4FAC081bf1f309aDC325306); // Asignar _priceFeedAddress a priceFeed
     owner = msg.sender;
     usdPerToken = _usdPerToken;
 }
